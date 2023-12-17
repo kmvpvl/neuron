@@ -1,0 +1,16 @@
+.learn-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.learn-cell {
+    border: 1px black solid;
+    margin: 5px;
+}
+
+.learn-w-values {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
