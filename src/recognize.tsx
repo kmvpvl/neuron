@@ -99,7 +99,7 @@ export default class Paint extends React.Component<{}, IPaintState> {
         const s8 = this.getCountInRect(this.minx+this.xrat, this.miny+2*this.yrat, this.xrat, this.yrat);
         const s9 = this.getCountInRect(this.minx+2*this.xrat, this.miny+2*this.yrat, this.xrat, this.yrat);
         const xc = this.xrat* this.yrat;
-        const percent = 0.2;
+        const percent = 0.15;
         const vector = [1, s1/xc>percent?1:0, s2/xc>percent?1:0,s3/xc>percent?1:0,
             s4/xc>percent?1:0, s5/xc>percent?1:0, s6/xc>percent?1:0,
             s7/xc>percent?1:0, s8/xc>percent?1:0, s9/xc>percent?1:0,];

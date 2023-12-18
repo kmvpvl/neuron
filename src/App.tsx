@@ -13,7 +13,7 @@ export default class App extends React.Component<{}, {}> {
         <button onClick={()=>{
           const v = this.recognizeRef.current?.doSprite();
           const ch = this.learnRef.current?.doCalc(v as number[]) as number;
-          alert(`${ch>0.3?'x':'not x'}: assurance: ${ch>0.3?ch:1- 0.3+ch}`);
+          alert(`${ch>0.5?'x':'not x'}: assurance: ${ch>0.5?ch:1- 0.5+ch}`);
         }}>Recognize</button>
         <Paint ref={this.recognizeRef}/>
         <Learn ref={this.learnRef}></Learn>
