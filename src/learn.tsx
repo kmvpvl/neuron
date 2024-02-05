@@ -7,66 +7,88 @@ interface ILearnState {
 interface ILearnProps {
 
 }
+class Neuron {
+    private sCount: number;
+//    private S: number[];
+    private A: number[][];
+    private rCount: number;
+//    private R: number[];
+    private learnCount: number;
+    constructor (sCount: number, rCount: number){
+        this.sCount = sCount;
+        this.rCount = rCount;
+//        this.S = new Array<number>(this.sCount+1);
+        this.A = new Array<number[]>(this.rCount);
+        for (let i = 0; i < rCount; i++) this.A[i] = new Array(sCount+1).fill(0);
+//        this.R = new Array<number>(this.rCount);
+        this.learnCount = 0;
+    }
+    doLearn(sValues: number[], rNumber: number, rightValue: number) {
+        this.learnCount++;
+        // curRes - current result of A-function
+        const v = [1, ...sValues];
+        let curRes: number = this.R(sValues, rNumber);
+        for (let i = 0; i < this.sCount+1; i++) curRes += v[i] * this.A[rNumber][i];
+        const diff = rightValue - curRes;
+        for (let i = 0; i < this.sCount+1; i++) this.A[rNumber][i] = (this.A[rNumber][i]*this.learnCount + v[i]*diff/(this.sCount+1))/this.learnCount;
+    }
+    R(sValues: number[], rNumber: number): number {
+        const v = [1, ...sValues];
+        let curRes: number = 0;
+        for (let i = 0; i < this.sCount+1; i++) curRes += v[i] * this.A[rNumber][i];
+        return curRes;
+    }
 
+    get _A() {
+        return this.A;
+    }
+    get _learnCount() {
+        return this.learnCount;
+    }
+}
 
 export default class Learn extends React.Component<ILearnProps, ILearnState> {
-    threshold: number = 0.01;
-    learningRate: number = 0.5;
-    weights: number[][] = [[0/* bias */, 
-    0, 0, 0, 
-    0, 0, 0, 
-    0, 0, 0 
-    ]];
-
-    D: number[] = [];
-
+    n: Neuron = new Neuron(9, 1);
     doLearn() {
-        //step 1 init
-        //step 2
-        let t = this.weights.length - 1;
-        do {
-            const wt1: number[] = [];
-            for (let l = 0; l < 10; l++) wt1[l] = this.weights[t][l];
-            for (let j = 0; j < 512; j++) {
-                const djstr = localStorage.getItem(j.toString());
-                const dj = djstr === null?0:parseInt(djstr);
-                const x = [1];
-                for (let l = 0; l < 9; l++) x.push((j >> l) & 1);
-                const yjt = this.weights[t].reduce((prev, w, i)=>prev+w*x[i]);
-                for (let l = 0; l < 10; l++) wt1[l] += this.learningRate * (dj - yjt) * x[l] / 512;
-            }
-            //  
-            this.weights.push(wt1);
-            t++;
-        } while(t < 40);
+        for (let j = 0; j < 512; j++) {
+            const djstr = localStorage.getItem(j.toString());
+            const dj = (djstr === null) || djstr === '0'?0:parseInt(djstr);
+            const x: number[] = [];
+            for (let l = 0; l < 9; l++) x.push((j >> l) & 1);
+            if (dj!== 0) this.n.doLearn(x, 0, dj)
+        }
         this.setState({});
     }
 
     doCalc(x: number[]): number {
-        let ret = 0;
-        for (let i = 0; i < 10; i++) {
-            ret += x[i]* this.weights[this.weights.length-1][i];
-        }
-        return ret;
+        return this.n.R(x, 0);
     }
 
     render(): React.ReactNode {
+        const onCh = (event: React.ChangeEvent<HTMLInputElement>)=> {
+            const i: string = event.currentTarget.getAttribute('v') as string;
+            const v: string = event.currentTarget.value;
+            if (v !== '0') localStorage.setItem(i, v);
+            else localStorage.removeItem(i);
+        }
         const temp = new Array<number>();
         for (let i = 0; i < 512; i++) temp.push(i);
         return <div className='learn-container'>
             <div className='learn-w-values'>
-                <span>iteration count={this.weights.length}</span>
-                <span>{this.weights[this.weights.length-1].map((v, i)=><span key={i}>w({i}) = {v.toPrecision(2)}; </span>)}</span>
+                <span>iteration count={this.n._learnCount}</span>
+                <span>{this.n._A[0].map((v, i)=><span key={i}>w({i}) = {v.toPrecision(2)}; </span>)}</span>
             </div>
             {temp.map((v, i)=>{
                 const ls = localStorage.getItem(i.toString());
-                const l = ls === '1'?true:false;
+                let l: number = 0;
+                if (ls!==null) l = parseInt(ls);
                 return <span className='learn-cell' key={i}>
                 <Sprite v={v}></Sprite>
-                <input type='checkbox' {...{v: i}} onChange={(event)=> {
-                    localStorage.setItem(event.currentTarget.getAttribute('v') as string, event.currentTarget.checked?'1':'0');
-                    this.setState({});
-                }} checked={l}></input>
+                <span>
+                <input type='radio' name={`dj${i}`} value="1" {...{v:i}} defaultChecked={l===1?true:undefined} onChange={(ev)=>onCh(ev)}/>
+                <input type='radio' name={`dj${i}`} value="-1" {...{v:i}} defaultChecked={l===-1?true:undefined} onChange={(ev)=>onCh(ev)}/>
+                <input type='radio' name={`dj${i}`} value="0" {...{v:i}} defaultChecked={l===0?true:undefined} onChange={(ev)=>onCh(ev)}/>
+                </span>
             </span>})}
         </div>;
     }

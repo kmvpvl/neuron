@@ -1,11 +1,11 @@
 .sprite-container {
     display: grid;
-    grid-template-rows: 5px 5px 5px;
-    grid-template-columns: 5px 5px 5px;
+    grid-template-rows: 7px 7px 7px;
+    grid-template-columns: 7px 7px 7px;
     border: 1px green solid;
     max-width: fit-content;
-    padding: 10px;
-    margin: 5px;
+    padding: 5px;
+    margin: 7px;
 }
 
 .sprite-cell-black {
