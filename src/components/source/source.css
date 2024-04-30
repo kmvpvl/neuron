@@ -1,0 +1,6 @@
+.source-container {
+    display: flex;
+    grid-area: source;
+    border: var(--debug-border);
+    padding: 5px;
+}

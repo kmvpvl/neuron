@@ -1,5 +1,17 @@
 .neuron-container {
     border: 1px solid black;
-    padding: 5px;
-    margin: 5px;
+    padding: 2px;
+    margin: 2px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    width: max-content;
+    height: max-content;
+    gap: 4px;
+    border-radius: 5px;
+}
+
+.neuron-title {
+    cursor: pointer;
+    border-bottom: 1px dashed black;
+    text-align: center;
 }

@@ -1,0 +1,11 @@
+.statusline-container {
+    display: flex;
+    grid-area: statusline;
+    padding: 2px;
+    border: var(--debug-border);
+}
+
+.status-element {
+    padding: 2px;
+    border-left: 1px;
+}

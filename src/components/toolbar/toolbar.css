@@ -1,0 +1,9 @@
+.toolbar-container {
+    grid-area: toolbar;
+    border: var(--debug-border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    gap: 5px;
+    padding: 5px;
+}

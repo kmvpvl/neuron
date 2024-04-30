@@ -1,0 +1,7 @@
+.properties-container {
+    display: flex;
+    flex-direction: column;
+    grid-area: properties;
+    padding: 5px;
+    border: var(--debug-border);
+}
