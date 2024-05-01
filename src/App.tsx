@@ -15,22 +15,38 @@ interface IAppState {
 
 export default class App extends React.Component<{}, IAppState> {
   propertiesRef: React.RefObject <Properties> = React.createRef();
+  sourceRef: React.RefObject <Source> = React.createRef();
   brain = new Brain();
   propertiesType: PropsTypes = '';
   onAddNeuron() {
     this.propertiesType = "neuron";
     this.setState({});
   }
+  onAddSource() {
+  //  document
+  }
+  onAddCascade() {
+    this.propertiesType = "cascade";
+    this.setState({});
+  }
+
+  onCascadeCreate() {
+
+  }
   onNeuronCreateOrUpdate() {
+    debugger
     let a_count = this.propertiesRef.current?.acountRef.current?.value;
-    let s_count = this.propertiesRef.current?.scountRef.current?.value;
+    let sw_count = this.propertiesRef.current?.swcountRef.current?.value;
+    let sh_count = this.propertiesRef.current?.shcountRef.current?.value;
     let n_name = this.propertiesRef.current?.neuronnameRef.current?.value;
     let a = a_count === undefined || a_count === ""?0:parseInt(a_count);
-    let s = s_count === undefined || s_count === ""?0:parseInt(s_count);
+    let sw = sw_count === undefined || sw_count === ""?0:parseInt(sw_count);
+    let sh = sh_count === undefined || sh_count === ""?0:parseInt(sh_count);
     let name = n_name === undefined?"":n_name;
     a = a === 0? a+1: a;
-    s = s === 0? s+1: s;
-    this.brain.addNeuron(name, s, a);
+    sw = sw === 0? sw+1: sw;
+    sh = sh === 0? sh+1: sh;
+    this.brain.addNeuron(name, sw, sh, a);
     this.propertiesType = "";
     this.setState({});
   }
@@ -39,11 +55,14 @@ export default class App extends React.Component<{}, IAppState> {
       <div className="App">
         <Logo></Logo>
         <User></User>
-        <Toolbar brainName='My brain' onAddNeuron={this.onAddNeuron.bind(this)}></Toolbar>
-        <Source></Source>
+        <Toolbar brainName='My brain' 
+          onAddNeuron={this.onAddNeuron.bind(this)} 
+          onAddSource={this.onAddSource.bind(this)}
+          onAddCascade={this.onAddCascade.bind(this)}></Toolbar>
+        <Source ref={this.sourceRef} width={5} height={5}></Source>
         <BrainComponent {...this.brain}></BrainComponent>
         <Properties type={this.propertiesType} ref={this.propertiesRef} onNeuronUpdated={this.onNeuronCreateOrUpdate.bind(this)}/>
-        <Statusline connected={false} allSaved={true}></Statusline>
+        <Statusline connected={false} allSaved={true} errorCode={0}></Statusline>
       </div>
     );
   }
