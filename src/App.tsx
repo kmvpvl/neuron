@@ -21,6 +21,9 @@ export default class App extends React.Component<{}, IAppState> {
     this.propertiesType = "neuron";
     this.setState({});
   }
+  onAddSource() {
+  //  document
+  }
   onNeuronCreateOrUpdate() {
     let a_count = this.propertiesRef.current?.acountRef.current?.value;
     let s_count = this.propertiesRef.current?.scountRef.current?.value;
@@ -39,7 +42,7 @@ export default class App extends React.Component<{}, IAppState> {
       <div className="App">
         <Logo></Logo>
         <User></User>
-        <Toolbar brainName='My brain' onAddNeuron={this.onAddNeuron.bind(this)}></Toolbar>
+        <Toolbar brainName='My brain' onAddNeuron={this.onAddNeuron.bind(this)} onAddSource={this.onAddSource.bind(this)}></Toolbar>
         <Source></Source>
         <BrainComponent {...this.brain}></BrainComponent>
         <Properties type={this.propertiesType} ref={this.propertiesRef} onNeuronUpdated={this.onNeuronCreateOrUpdate.bind(this)}/>

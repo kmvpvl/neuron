@@ -1,6 +1,11 @@
 .source-container {
-    display: flex;
+    display: grid;
+    grid-template-rows: auto 1fr;
     grid-area: source;
     border: var(--debug-border);
     padding: 5px;
+}
+
+.source-container > canvas {
+    border: var(--debug-border);
 }

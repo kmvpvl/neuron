@@ -2,7 +2,8 @@ import React from "react";
 import "./toolbar.css"
 export interface IToolbarProps {
     brainName: string;
-    onAddNeuron: ()=>void
+    onAddNeuron: ()=>void;
+    onAddSource: ()=>void;
 }
 
 export interface IToolbarState {
@@ -18,7 +19,7 @@ export default class Toolbar extends React.Component<IToolbarProps, IToolbarStat
             <button>Remove neuron</button>
             <button>Add link</button>
             <button>Remove link</button>
-            <button>Add source</button>
+            <button onClick={this.props.onAddSource}>Add source</button>
             <button>Learn</button>
             <button>Recalc</button>
         </span>
