@@ -34,7 +34,6 @@ export default class App extends React.Component<{}, IAppState> {
 
   }
   onNeuronCreateOrUpdate() {
-    debugger
     let a_count = this.propertiesRef.current?.acountRef.current?.value;
     let sw_count = this.propertiesRef.current?.swcountRef.current?.value;
     let sh_count = this.propertiesRef.current?.shcountRef.current?.value;
@@ -46,7 +45,10 @@ export default class App extends React.Component<{}, IAppState> {
     a = a === 0? a+1: a;
     sw = sw === 0? sw+1: sw;
     sh = sh === 0? sh+1: sh;
-    this.brain.addNeuron(name, sw, sh, a);
+    const n = this.brain.addNeuron(name, sw, sh, a);
+    if (this.sourceRef.current?.canvasRef.current) {
+      n.createLinkImage(this.sourceRef.current?.canvasRef.current, 0, 0);
+    }
     this.propertiesType = "";
     this.setState({});
   }
