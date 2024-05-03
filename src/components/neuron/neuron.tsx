@@ -3,12 +3,16 @@ import {INeuron, Neuron} from './../../model/brain'
 import React from 'react';
 
 export interface INeuronState {
-
+    selected: boolean;
 }
 
 export default class NeuronComponent extends React.Component<INeuron, INeuronState> {
     neuron: Neuron = Neuron.NeuronFromInterface(this.props);
-
+    state = {selected: false};
+    meRef: React.RefObject<HTMLSpanElement> = React.createRef();
+    ToggleSelected(){
+        this.meRef.current?.classList.toggle("neuron-selected");
+    }
     render(): React.ReactNode {
 
         const ndata = this.neuron.getSValues();
@@ -26,6 +30,7 @@ export default class NeuronComponent extends React.Component<INeuron, INeuronSta
             <g key={`neuron_${this.neuron._name}_a_${i}`}>
             <circle cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2}  stroke='silver' fill='white'></circle>
             <circle cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2 * this.neuron._AValuesCache[i]} ></circle>
+            <text x={width + circle_padding} y={v+circle_diameter/2} fontSize={circle_diameter}>{Math.round(this.neuron._AValuesCache[i]*100)/100}</text>
             </g>
         )
         const s = new Array<number>(s_count);
@@ -34,11 +39,12 @@ export default class NeuronComponent extends React.Component<INeuron, INeuronSta
             <g key={`neuron_${this.neuron._name}_s_${i}`}>
             <circle cx={circle_diameter/2} cy={v} r={circle_diameter/2} stroke='silver' fill='white'></circle>
             <circle cx={circle_diameter/2} cy={v} r={circle_diameter/2 * ndata[i]}></circle>
+            <text x={circle_diameter+circle_padding} y={v+circle_diameter/2} fontSize={circle_diameter}>{Math.round(this.neuron._SValuesCache[i]* 100)/100}</text>
             </g>
         )
-    return <span className='neuron-container'>
-            <span className='neuron-title' key={`neuron_title_${this.props._name}`}>{this.neuron._name}</span>
-            <svg version="1.1" width={width} height={height} xmlns="http://www.w3.org/2000/svg">
+    return <span className='neuron-container' ref={this.meRef}>
+            <span className='neuron-title' key={`neuron_title_${this.props._name}`} onClick={this.ToggleSelected.bind(this)}>{this.neuron._name}</span>
+            <svg version="1.1" width={width * 1.5} height={height} xmlns="http://www.w3.org/2000/svg">
             {a_l}
             {s_l}
             </svg>

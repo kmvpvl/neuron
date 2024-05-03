@@ -25,6 +25,10 @@ export default class App extends React.Component<{}, IAppState> {
   onAddSource() {
   //  document
   }
+  onLearn() {
+    this.propertiesType = "learn";
+    this.setState({});
+  }
   onAddCascade() {
     this.propertiesType = "cascade";
     this.setState({});
@@ -36,7 +40,7 @@ export default class App extends React.Component<{}, IAppState> {
   onImageChanged() {
     this.setState({});
   }
-  onNeuronCreateOrUpdate() {
+  doNeuronCreateOrUpdate() {
     let a_count = this.propertiesRef.current?.acountRef.current?.value;
     let sw_count = this.propertiesRef.current?.swcountRef.current?.value;
     let sh_count = this.propertiesRef.current?.shcountRef.current?.value;
@@ -55,6 +59,12 @@ export default class App extends React.Component<{}, IAppState> {
     this.propertiesType = "";
     this.setState({});
   }
+  doLearn() {
+    const rightValue = parseFloat(this.propertiesRef.current?.rightValueRef.current?.value as string);
+    const ind = parseInt(this.propertiesRef.current?.AindexRef.current?.value as string);
+    this.brain._neurons[0].learn(ind, rightValue);
+    this.setState({});
+  }
   render(): React.ReactNode {
     return (
       <div className="App">
@@ -63,10 +73,14 @@ export default class App extends React.Component<{}, IAppState> {
         <Toolbar brainName='My brain' 
           onAddNeuron={this.onAddNeuron.bind(this)} 
           onAddSource={this.onAddSource.bind(this)}
-          onAddCascade={this.onAddCascade.bind(this)}></Toolbar>
+          onAddCascade={this.onAddCascade.bind(this)}
+          onLearn={this.onLearn.bind(this)}></Toolbar>
         <Source ref={this.sourceRef} width={5} height={5} onImageChanged={this.onImageChanged.bind(this)}></Source>
         <BrainComponent {...this.brain}></BrainComponent>
-        <Properties type={this.propertiesType} ref={this.propertiesRef} onNeuronUpdated={this.onNeuronCreateOrUpdate.bind(this)}/>
+        <Properties type={this.propertiesType} ref={this.propertiesRef} 
+          onNeuronUpdated={this.doNeuronCreateOrUpdate.bind(this)}
+          onLearn={this.doLearn.bind(this)}
+        />
         <Statusline connected={false} allSaved={true} errorCode={0}></Statusline>
       </div>
     );

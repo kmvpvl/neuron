@@ -75,6 +75,7 @@ export class Neuron implements INeuron {
             for (let j = 0; j <= SCount; j++) w[j] = 0.0;
             this._W.push(w);
             this._AValuesCache.push(0);
+            this._learnCount.push(0);
         }
     }
     createLinkImage(imd: HTMLCanvasElement, tileX: number, tileY: number): void {
@@ -102,6 +103,15 @@ export class Neuron implements INeuron {
     }
 
     learn(Aindex: number, rightValue: number): number {
+        this._learnCount[Aindex]++;
+        this.getSValues();
+        const curRes = this.calcA(Aindex);
+        debugger
+        const v = [1, ...this._SValuesCache];
+        const diff = rightValue - curRes;
+        for (let i = 0; i < this._SHCount*this._SWCount + 1; i++){
+            this._W[Aindex][i] = (this._W[Aindex][i] * this._learnCount[Aindex] + v[i] * diff/(this._SHCount*this._SWCount + 1))/this._learnCount[Aindex];
+        }
         return this._learnCount[Aindex];
     }
     get name(): string {return this._name}

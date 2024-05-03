@@ -1,5 +1,5 @@
 .neuron-container {
-    border: 1px solid black;
+    border: 1px dotted black;
     padding: 2px;
     margin: 2px;
     display: grid;
@@ -8,6 +8,11 @@
     height: max-content;
     gap: 4px;
     border-radius: 5px;
+}
+
+.neuron-selected {
+    border-style: solid;
+    border-width: 2px;
 }
 
 .neuron-title {
