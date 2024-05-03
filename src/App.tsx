@@ -33,6 +33,9 @@ export default class App extends React.Component<{}, IAppState> {
   onCascadeCreate() {
 
   }
+  onImageChanged() {
+    this.setState({});
+  }
   onNeuronCreateOrUpdate() {
     let a_count = this.propertiesRef.current?.acountRef.current?.value;
     let sw_count = this.propertiesRef.current?.swcountRef.current?.value;
@@ -61,7 +64,7 @@ export default class App extends React.Component<{}, IAppState> {
           onAddNeuron={this.onAddNeuron.bind(this)} 
           onAddSource={this.onAddSource.bind(this)}
           onAddCascade={this.onAddCascade.bind(this)}></Toolbar>
-        <Source ref={this.sourceRef} width={5} height={5}></Source>
+        <Source ref={this.sourceRef} width={5} height={5} onImageChanged={this.onImageChanged.bind(this)}></Source>
         <BrainComponent {...this.brain}></BrainComponent>
         <Properties type={this.propertiesType} ref={this.propertiesRef} onNeuronUpdated={this.onNeuronCreateOrUpdate.bind(this)}/>
         <Statusline connected={false} allSaved={true} errorCode={0}></Statusline>
