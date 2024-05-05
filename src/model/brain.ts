@@ -102,15 +102,27 @@ export class Neuron implements INeuron {
 
     }
 
-    learn(Aindex: number, rightValue: number): number {
+    _learnAtom(Aindex: number, rightValue: number): number { // return percent of goal achive
         this._learnCount[Aindex]++;
         this.getSValues();
         const curRes = this.calcA(Aindex);
-        debugger
+        //debugger
         const v = [1, ...this._SValuesCache];
         const diff = rightValue - curRes;
         for (let i = 0; i < this._SHCount*this._SWCount + 1; i++){
             this._W[Aindex][i] = (this._W[Aindex][i] * this._learnCount[Aindex] + v[i] * diff/(this._SHCount*this._SWCount + 1))/this._learnCount[Aindex];
+        }
+        return diff/rightValue;
+    }
+    
+    learn(Aindex: number, rightValue: number, uptoPercent: number = 0.1, learnCount?: number): number {
+        if (learnCount === undefined) {
+            // doing until percent goal achieved
+            const maxM = 10000;
+            let m = 0; // counter is a fuse to infinite cycle
+            while (m++ < maxM) {
+                if (Math.abs(this._learnAtom(Aindex, rightValue)) <uptoPercent) break;
+            } 
         }
         return this._learnCount[Aindex];
     }

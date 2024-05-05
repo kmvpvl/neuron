@@ -31,6 +31,24 @@ export default class Source extends React.Component <ISourceProps, ISourceState>
         ctx?.stroke();
         this.props.onImageChanged();
     }
+    private drawhor() {
+        if (!this.canvasRef.current) return;
+        const ctx = this.canvasRef.current.getContext("2d");
+        ctx?.beginPath();
+        ctx?.moveTo(0, this.props.height/2);
+        ctx?.lineTo(this.props.width, this.props.height/2);
+        ctx?.stroke();
+        this.props.onImageChanged();
+    }
+    private drawver() {
+        if (!this.canvasRef.current) return;
+        const ctx = this.canvasRef.current.getContext("2d");
+        ctx?.beginPath();
+        ctx?.moveTo(this.props.width/2, 0);
+        ctx?.lineTo(this.props.width/2, this.props.height);
+        ctx?.stroke();
+        this.props.onImageChanged();
+    }
     private clear() {
         if (!this.canvasRef.current) return;
         const ctx = this.canvasRef.current.getContext("2d");
@@ -61,6 +79,8 @@ export default class Source extends React.Component <ISourceProps, ISourceState>
             <span>{w}x{h} = {w*h}</span>
             <button onClick={this.drawbackslash.bind(this)}>Draw \</button>
             <button onClick={this.drawslash.bind(this)}>Draw /</button>
+            <button onClick={this.drawhor.bind(this)}>Draw -</button>
+            <button onClick={this.drawver.bind(this)}>Draw |</button>
             <button onClick={this.clear.bind(this)}>Clear</button>
         </span>
     }
