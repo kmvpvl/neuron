@@ -2,12 +2,14 @@ import React, {  } from 'react';
 import './App.css';
 import Logo from './components/logo/logo';
 import User from './components/user/user';
-import Statusline from './components/statusline/statusline';
+import Statusline, { IStatuslineState } from './components/statusline/statusline';
 import Toolbar from './components/toolbar/toolbar';
 import Properties, { PropsTypes } from './components/properties/properties';
 import Source from './components/source/source';
 import { Brain, Neuron } from './model/brain';
 import BrainComponent from './components/brain/brain';
+import { serverCommand, serverFetch } from './common/fetches';
+import Pending from './components/pending/pending';
 
 interface IAppState {
   curNeuron: Neuron;
@@ -16,8 +18,38 @@ interface IAppState {
 export default class App extends React.Component<{}, IAppState> {
   propertiesRef: React.RefObject <Properties> = React.createRef();
   sourceRef: React.RefObject <Source> = React.createRef();
+  statuslineRef: React.RefObject <Statusline> = React.createRef();
+  pendingRef: React.RefObject <Pending> = React.createRef();
   brain = new Brain();
   propertiesType: PropsTypes = '';
+  _username: string | null = localStorage.getItem("neuron_username");
+  _authtoken: string | null = localStorage.getItem("neuron_authtoken");
+
+  componentDidMount(): void {
+    this.ping();
+    setInterval(this.ping.bind(this), 30000);
+    if (this._username && this._authtoken) {
+
+    }
+  }
+  ping () {
+    const obj = this;
+    serverFetch('version', "GET", undefined, undefined, (res)=>{
+      if (obj.statuslineRef.current) {
+        let stl: IStatuslineState = obj.statuslineRef.current?.state;
+        stl.connected = true;
+        obj.statuslineRef.current?.setState(stl);
+      }
+    }, (err)=> {
+      if (obj.statuslineRef.current) {
+        let stl: IStatuslineState = obj.statuslineRef.current?.state;
+        stl.connected = false;
+        stl.errorCode = -1;
+        stl.errorText = err.message
+        obj.statuslineRef.current?.setState(stl);
+      }
+    })
+  }
   onAddNeuron() {
     this.propertiesType = "neuron";
     this.setState({});
@@ -65,11 +97,31 @@ export default class App extends React.Component<{}, IAppState> {
     this.brain._neurons[0].learn(ind, rightValue);
     this.setState({});
   }
+  saveUserToLocalStorage(){
+    if (this._username && this._authtoken) {
+      localStorage.setItem("neuron_username", this._username);
+      localStorage.setItem("neuron_authtoken", this._authtoken);
+    }
+  }
+  createUser(name: string) {
+    this.pendingRef.current?.incUse();
+    serverCommand('newuser', undefined, {
+      username: name
+    }, (res)=>{
+      this.pendingRef.current?.decUse();
+      this._username = name;
+      this._authtoken = res.authtoken;
+      this.saveUserToLocalStorage();
+      this.setState({});
+    }, (err)=> {
+      this.pendingRef.current?.decUse();
+    })
+  }
   render(): React.ReactNode {
     return (
       <div className="App">
         <Logo></Logo>
-        <User></User>
+        <User onCreateUser={this.createUser.bind(this)} username={this._username?this._username:undefined}></User>
         <Toolbar brainName='My brain' 
           onAddNeuron={this.onAddNeuron.bind(this)} 
           onAddSource={this.onAddSource.bind(this)}
@@ -81,7 +133,9 @@ export default class App extends React.Component<{}, IAppState> {
           onNeuronUpdated={this.doNeuronCreateOrUpdate.bind(this)}
           onLearn={this.doLearn.bind(this)}
         />
-        <Statusline connected={false} allSaved={true} errorCode={0}></Statusline>
+        <Statusline ref={this.statuslineRef}></Statusline>
+        <Pending ref={this.pendingRef}/>
+
       </div>
     );
   }
