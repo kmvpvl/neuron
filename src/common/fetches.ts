@@ -13,8 +13,6 @@ export interface ILoginReq {
     authtoken: string;
 }
 
-export let loginpsw: ILoginReq;
-
 console.log(JSON.stringify(process.env));
 export function serverFetch(command: string, method: string, headers?: HeadersInit, body?: object, successcb?: (res: any)=>void, failcb?: (err: NeuronError)=>void) {
     const h: Headers = new Headers([
@@ -68,7 +66,7 @@ export function serverFetch(command: string, method: string, headers?: HeadersIn
 
 export function serverCommand (command: string, lr?: ILoginReq, body?: object, successcb?: (res: any)=>void, failcb?: (err: NeuronError)=>void){
     serverFetch(command, 'POST', {
-        neuron_username: loginpsw?.username,
-        shome_authtoken: loginpsw?.authtoken
+        "neuron_username": lr?.username as string,
+        "neuron_authtoken": lr?.authtoken as string
     }, body, successcb, failcb);
 }

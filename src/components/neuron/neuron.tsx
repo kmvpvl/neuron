@@ -29,9 +29,9 @@ export default class NeuronComponent extends React.Component<INeuron, INeuronSta
         for (let i = 0; i < a_count; i++) a[i] = i * (circle_diameter + circle_padding) + circle_diameter/2 + (height - a_height)/2;
         let a_l = a.map((v, i)=>
             <g key={`neuron_${this.neuron._name}_a_${i}`}>
-            <circle cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2}  stroke={maxA === this.neuron._AValuesCache[i]?"green":"silver"} fill='white'></circle>
-            <circle cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2 * this.neuron._AValuesCache[i]} fill={maxA === this.neuron._AValuesCache[i]?"green":"silver"}></circle>
-            <text x={width + circle_padding} y={v+circle_diameter/2} fontSize={circle_diameter}>{Math.round(this.neuron._AValuesCache[i]*100)/100}</text>
+            <circle cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2}  stroke={maxA == this.neuron._AValuesCache[i]?"green":"silver"} fill='white'></circle>
+            <circle cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2 * this.neuron._AValuesCache[i]} fill={maxA == this.neuron._AValuesCache[i]?"green":"silver"}></circle>
+            <text x={width + circle_padding} y={v+circle_diameter/2} fontSize={circle_diameter}>{Math.round(this.neuron._AValuesCache[i]*100)/100} '{this.neuron._ANames[i]}'</text>
             </g>
         )
         const s = new Array<number>(s_count);
@@ -45,7 +45,7 @@ export default class NeuronComponent extends React.Component<INeuron, INeuronSta
         )
     return <span className='neuron-container' ref={this.meRef}>
             <span className='neuron-title' key={`neuron_title_${this.props._name}`} onClick={this.ToggleSelected.bind(this)}>{this.neuron._name}</span>
-            <svg version="1.1" width={width * 1.5} height={height} xmlns="http://www.w3.org/2000/svg">
+            <svg version="1.1" width={width * 2} height={height} xmlns="http://www.w3.org/2000/svg">
             {a_l}
             {s_l}
             </svg>

@@ -6,9 +6,9 @@ import Statusline, { IStatuslineState } from './components/statusline/statusline
 import Toolbar from './components/toolbar/toolbar';
 import Properties, { PropsTypes } from './components/properties/properties';
 import Source from './components/source/source';
-import { Brain, Neuron } from './model/brain';
+import { Brain, INeuron, Neuron } from './model/brain';
 import BrainComponent from './components/brain/brain';
-import { serverCommand, serverFetch } from './common/fetches';
+import { ILoginReq, serverCommand, serverFetch } from './common/fetches';
 import Pending from './components/pending/pending';
 
 interface IAppState {
@@ -27,10 +27,26 @@ export default class App extends React.Component<{}, IAppState> {
 
   componentDidMount(): void {
     this.ping();
-    setInterval(this.ping.bind(this), 30000);
+    //setInterval(this.ping.bind(this), 30000);
     if (this._username && this._authtoken) {
-
+      this.loadBrain();
     }
+  }
+  loadBrain(){
+    this.pendingRef.current?.incUse();
+    this.brain.clear();
+    serverCommand('loadbrain', this.loginReq, {brainname: ""}, (res)=> {
+      this.pendingRef.current?.decUse();
+      this.brain.clear();
+      for (let i = 0; i < res.neurons.length;i++){
+        const n:INeuron = res.neurons[i];
+        const no = this.brain.addNeuron(n._name, n._SWCount, n._SHCount, n._ACount, n._ANames, n._learnCount, n._W, n._SLinks, this.sourceRef.current?.canvasRef.current);
+        no.getSValues();
+      }
+      this.setState({});
+    }, (err)=>{
+      this.pendingRef.current?.decUse();
+    });
   }
   ping () {
     const obj = this;
@@ -44,8 +60,10 @@ export default class App extends React.Component<{}, IAppState> {
       if (obj.statuslineRef.current) {
         let stl: IStatuslineState = obj.statuslineRef.current?.state;
         stl.connected = false;
-        stl.errorCode = -1;
-        stl.errorText = err.message
+        stl.errors.push({
+          errorCode: -1,
+          errorText: err.message
+        });
         obj.statuslineRef.current?.setState(stl);
       }
     })
@@ -89,8 +107,17 @@ export default class App extends React.Component<{}, IAppState> {
       n.createLinkImage(this.sourceRef.current?.canvasRef.current, 0, 0);
     }
     this.propertiesType = "";
+    this.pendingRef.current?.incUse();
+    serverCommand('savebrain', this.loginReq, {brain: this.brain.json}, (res)=> {
+      this.pendingRef.current?.decUse();
+    }, (err)=> {
+      this.pendingRef.current?.decUse();
+    })
     this.setState({});
   }
+  get loginReq(): ILoginReq {
+    return {username: this._username as string, authtoken: this._authtoken as string};
+  } 
   doLearn() {
     const rightValue = parseFloat(this.propertiesRef.current?.rightValueRef.current?.value as string);
     const ind = parseInt(this.propertiesRef.current?.AindexRef.current?.value as string);
