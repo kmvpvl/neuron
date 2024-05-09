@@ -107,21 +107,27 @@ export default class App extends React.Component<{}, IAppState> {
       n.createLinkImage(this.sourceRef.current?.canvasRef.current, 0, 0);
     }
     this.propertiesType = "";
+    this.saveBrain();
+    this.setState({});
+  }
+  get loginReq(): ILoginReq {
+    return {username: this._username as string, authtoken: this._authtoken as string};
+  } 
+
+  saveBrain() {
     this.pendingRef.current?.incUse();
     serverCommand('savebrain', this.loginReq, {brain: this.brain.json}, (res)=> {
       this.pendingRef.current?.decUse();
     }, (err)=> {
       this.pendingRef.current?.decUse();
     })
-    this.setState({});
   }
-  get loginReq(): ILoginReq {
-    return {username: this._username as string, authtoken: this._authtoken as string};
-  } 
+
   doLearn() {
     const rightValue = parseFloat(this.propertiesRef.current?.rightValueRef.current?.value as string);
     const ind = parseInt(this.propertiesRef.current?.AindexRef.current?.value as string);
     this.brain._neurons[0].learn(ind, rightValue);
+    this.saveBrain();
     this.setState({});
   }
   saveUserToLocalStorage(){
