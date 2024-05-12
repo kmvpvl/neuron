@@ -4,17 +4,19 @@ import "./properties.css"
 export type PropsTypes = "" | "neuron" | "brain" | "cascade" | "A-element" | "S-element" | "source" | "learn"; 
 
 export interface IPropertiesProps {
-    type: PropsTypes;
     onNeuronUpdated: ()=>void;
     onLearn: ()=>void;
 }
 
 export interface IPropertiesState {
-
+    type: PropsTypes;
 }
 
 
 export default class Properties extends React.Component <IPropertiesProps, IPropertiesState> {
+    state: IPropertiesState = {
+        type: ""
+    };
     neuronnameRef: React.RefObject<HTMLInputElement> = React.createRef();
     acountRef: React.RefObject<HTMLInputElement> = React.createRef();
     swcountRef: React.RefObject<HTMLInputElement> = React.createRef();
@@ -26,7 +28,7 @@ export default class Properties extends React.Component <IPropertiesProps, IProp
     hiddenLayersCountRef: React.RefObject<HTMLInputElement> = React.createRef();
     
     renderType() : React.ReactNode {
-        switch(this.props.type) {
+        switch(this.state.type) {
             case "": return <span>No properties</span>;
             case "neuron": return <span>
                 <span>Neuron properties</span><br/>
@@ -56,7 +58,13 @@ export default class Properties extends React.Component <IPropertiesProps, IProp
                 Righ value<input type="number" ref={this.rightValueRef}></input><br/>
                 <button onClick={this.props.onLearn}>Apply</button>
             </span>
-    }
+            case "S-element": return <span>
+                <span>S-element</span><br/>
+                A-Index<input type="number" ref={this.AindexRef}></input><br/>
+                Righ value<input type="number" ref={this.rightValueRef}></input><br/>
+                <button onClick={this.props.onLearn}>Apply</button>
+            </span>
+        }
     }
     render(): React.ReactNode {
         return <span className="properties-container">

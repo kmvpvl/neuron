@@ -3,7 +3,9 @@ import "./user.css"
 import { serverCommand } from "../../common/fetches";
 export interface IUserProps {
     onCreateUser: (username: string)=> void;
+    onBrainSelected: (brainname: string)=> void;
     username?: string;
+    brainlist?: Array<string>;
 }
 
 type UserMode = "start" | "register" | "signin" | "logged";
@@ -19,6 +21,12 @@ export default class User extends React.Component<IUserProps, IUserState> {
     _usernameRef: React.RefObject<HTMLInputElement> = React.createRef();
     _checkusernamestatusRef: React.RefObject<HTMLSpanElement> = React.createRef();
     _createuserbuttonRef: React.RefObject<HTMLButtonElement> = React.createRef();
+    _brainListRef: React.RefObject<HTMLSelectElement> = React.createRef();
+    componentDidUpdate(): void {
+        if (this.props.brainlist !== undefined && this.props.brainlist.length !== 0) {
+            this.props.onBrainSelected(this._brainListRef.current?.value as string)
+        }
+    }
     toSignInMode(){
         this.setState({mode: "signin"});
     }
@@ -48,7 +56,12 @@ export default class User extends React.Component<IUserProps, IUserState> {
                 case "register":             
                     return <span className="user-container"><input placeholder="Choose user name" autoFocus={true} ref={this._usernameRef} onChange={this._checkName.bind(this)}></input><span ref={this._checkusernamestatusRef}></span><button ref={this._createuserbuttonRef} onClick={this._newUser.bind(this)}>Create user</button></span>
                 default:
-                    return <span className="user-container">🕵️{this.props.username}</span>
+                    return <span className="user-container">
+                        <span>🕵️{this.props.username}</span>
+                        <select ref={this._brainListRef} onSelect={e=>this.props.onBrainSelected(e.currentTarget.value)}>
+                            {this.props.brainlist?.map((v, i)=><option key={i} value={v}>{v}</option>)}
+                        </select>
+                    </span>
                 }
     }
 }

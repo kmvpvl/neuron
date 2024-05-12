@@ -4,14 +4,23 @@ import React from 'react';
 
 export interface INeuronState {
     selected: boolean;
+    sSelected?: number;
 }
 
 export default class NeuronComponent extends React.Component<INeuron, INeuronState> {
     neuron: Neuron = Neuron.NeuronFromInterface(this.props);
-    state = {selected: false};
+    state = {
+        selected: false,
+        sSelected: undefined
+    };
     meRef: React.RefObject<HTMLSpanElement> = React.createRef();
     ToggleSelected(){
         this.meRef.current?.classList.toggle("neuron-selected");
+    }
+    ToggleSSelected(Sindex: number) {
+        const st: INeuronState = this.state;
+        st.sSelected = Sindex;
+        this.setState(st);
     }
     render(): React.ReactNode {
 
@@ -29,8 +38,8 @@ export default class NeuronComponent extends React.Component<INeuron, INeuronSta
         for (let i = 0; i < a_count; i++) a[i] = i * (circle_diameter + circle_padding) + circle_diameter/2 + (height - a_height)/2;
         let a_l = a.map((v, i)=>
             <g key={`neuron_${this.neuron._name}_a_${i}`}>
-            <circle cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2}  stroke={maxA == this.neuron._AValuesCache[i]?"green":"silver"} fill='white'></circle>
-            <circle cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2 * this.neuron._AValuesCache[i]} fill={maxA == this.neuron._AValuesCache[i]?"green":"silver"}></circle>
+            <circle className={i===this.state.sSelected?"a-s-element-selected":""} onClick={this.ToggleSSelected.bind(this, i)} cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2}  stroke={maxA <= this.neuron._AValuesCache[i]?"green":"silver"} fill='white'></circle>
+            <circle cx={width - circle_diameter/2 - 1} cy={v} r={circle_diameter/2 * this.neuron._AValuesCache[i]} fill={maxA <= this.neuron._AValuesCache[i]?"green":"silver"}></circle>
             <text x={width + circle_padding} y={v+circle_diameter/2} fontSize={circle_diameter}>{Math.round(this.neuron._AValuesCache[i]*100)/100} '{this.neuron._ANames[i]}'</text>
             </g>
         )

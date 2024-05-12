@@ -24,6 +24,7 @@ export class Brain implements IBrain {
     get neurons(): NeuronsArray {return this._neurons} 
     get json() {
         return {
+            name: this._name,
             neurons: this.neurons.map(v=>v.json)
         }
     }
@@ -91,7 +92,7 @@ export class Neuron implements INeuron {
             }
             this._AValuesCache.push(0);
             this._learnCount.push(learnCount?learnCount[i]:0);
-            this._ANames.push(ANames?ANames[i]:i.toString());
+            this._ANames.push(ANames?ANames[i]:`S${i}`);
         }
     }
     createLinkImage(imd: HTMLCanvasElement, tileX: number, tileY: number): void {
@@ -123,7 +124,6 @@ export class Neuron implements INeuron {
         this._learnCount[Aindex]++;
         this.getSValues();
         const curRes = this.calcA(Aindex);
-        //debugger
         const v = [1, ...this._SValuesCache];
         const diff = rightValue - curRes;
         for (let i = 0; i < this._SHCount*this._SWCount + 1; i++){
@@ -150,7 +150,6 @@ export class Neuron implements INeuron {
     calcA(x: number): number {
         const v = [1, ...this._SValuesCache];
         const w = this._W[x];
-        //debugger
         const ret = v.reduce((part, v, i)=> part + v * w[i], 0.0);
         this._AValuesCache[x] = ret;
         return ret;

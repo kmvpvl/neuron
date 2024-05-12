@@ -4,7 +4,7 @@ import Logo from './components/logo/logo';
 import User from './components/user/user';
 import Statusline, { IStatuslineState } from './components/statusline/statusline';
 import Toolbar from './components/toolbar/toolbar';
-import Properties, { PropsTypes } from './components/properties/properties';
+import Properties, {  } from './components/properties/properties';
 import Source from './components/source/source';
 import { Brain, INeuron, Neuron } from './model/brain';
 import BrainComponent from './components/brain/brain';
@@ -20,8 +20,10 @@ export default class App extends React.Component<{}, IAppState> {
   sourceRef: React.RefObject <Source> = React.createRef();
   statuslineRef: React.RefObject <Statusline> = React.createRef();
   pendingRef: React.RefObject <Pending> = React.createRef();
+  userRef: React.RefObject<User> = React.createRef();
+  braincompenentRef: React.RefObject<BrainComponent> = React.createRef();
   brain = new Brain();
-  propertiesType: PropsTypes = '';
+  brainList: Array<string> = [];
   _username: string | null = localStorage.getItem("neuron_username");
   _authtoken: string | null = localStorage.getItem("neuron_authtoken");
 
@@ -29,21 +31,33 @@ export default class App extends React.Component<{}, IAppState> {
     this.ping();
     //setInterval(this.ping.bind(this), 30000);
     if (this._username && this._authtoken) {
-      this.loadBrain();
+      this.loadBrainList();
     }
   }
-  loadBrain(){
+  loadBrainList() {
     this.pendingRef.current?.incUse();
     this.brain.clear();
-    serverCommand('loadbrain', this.loginReq, {brainname: ""}, (res)=> {
+    serverCommand('brainlist', this.loginReq, undefined, (res)=> {
+      this.pendingRef.current?.decUse();
+      this.brainList = res;
+      this.setState({});
+    }, (err)=>{
+      this.pendingRef.current?.decUse();
+    });
+  }
+  loadBrain(brainname: string){
+    this.pendingRef.current?.incUse();
+    this.brain.clear();
+    serverCommand('loadbrain', this.loginReq, {brainname: brainname}, (res)=> {
       this.pendingRef.current?.decUse();
       this.brain.clear();
+      this.brain._name = res.name;
       for (let i = 0; i < res.neurons.length;i++){
         const n:INeuron = res.neurons[i];
         const no = this.brain.addNeuron(n._name, n._SWCount, n._SHCount, n._ACount, n._ANames, n._learnCount, n._W, n._SLinks, this.sourceRef.current?.canvasRef.current);
         no.getSValues();
       }
-      this.setState({});
+      this.braincompenentRef.current?.setState({});
     }, (err)=>{
       this.pendingRef.current?.decUse();
     });
@@ -68,27 +82,27 @@ export default class App extends React.Component<{}, IAppState> {
       }
     })
   }
-  onAddNeuron() {
-    this.propertiesType = "neuron";
-    this.setState({});
+  onAddNeuronButtonPressed() {
+    this.propertiesRef.current?.setState({type: "neuron"});
   }
   onAddSource() {
   //  document
   }
   onLearn() {
-    this.propertiesType = "learn";
-    this.setState({});
+    this.propertiesRef.current?.setState({type: "learn"});
   }
   onAddCascade() {
-    this.propertiesType = "cascade";
-    this.setState({});
+    this.propertiesRef.current?.setState({type: "cascade"});
   }
 
   onCascadeCreate() {
 
   }
   onImageChanged() {
-    this.setState({});
+    this.braincompenentRef.current?.setState({});
+  }
+  onImageResized(w: number, h: number) {
+
   }
   doNeuronCreateOrUpdate() {
     let a_count = this.propertiesRef.current?.acountRef.current?.value;
@@ -106,9 +120,9 @@ export default class App extends React.Component<{}, IAppState> {
     if (this.sourceRef.current?.canvasRef.current) {
       n.createLinkImage(this.sourceRef.current?.canvasRef.current, 0, 0);
     }
-    this.propertiesType = "";
+    this.propertiesRef.current?.setState({type: ""});
     this.saveBrain();
-    this.setState({});
+    this.braincompenentRef.current?.setState({});
   }
   get loginReq(): ILoginReq {
     return {username: this._username as string, authtoken: this._authtoken as string};
@@ -128,7 +142,7 @@ export default class App extends React.Component<{}, IAppState> {
     const ind = parseInt(this.propertiesRef.current?.AindexRef.current?.value as string);
     this.brain._neurons[0].learn(ind, rightValue);
     this.saveBrain();
-    this.setState({});
+    this.braincompenentRef.current?.setState({});
   }
   saveUserToLocalStorage(){
     if (this._username && this._authtoken) {
@@ -150,19 +164,22 @@ export default class App extends React.Component<{}, IAppState> {
       this.pendingRef.current?.decUse();
     })
   }
+  onBrainSelected(brainName: string) {
+    this.loadBrain(brainName);
+  }
   render(): React.ReactNode {
     return (
       <div className="App">
         <Logo></Logo>
-        <User onCreateUser={this.createUser.bind(this)} username={this._username?this._username:undefined}></User>
+        <User onCreateUser={this.createUser.bind(this)} username={this._username?this._username:undefined} brainlist={this.brainList} ref={this.userRef} onBrainSelected={this.onBrainSelected.bind(this)}></User>
         <Toolbar brainName='My brain' 
-          onAddNeuron={this.onAddNeuron.bind(this)} 
+          onAddNeuron={this.onAddNeuronButtonPressed.bind(this)} 
           onAddSource={this.onAddSource.bind(this)}
           onAddCascade={this.onAddCascade.bind(this)}
           onLearn={this.onLearn.bind(this)}></Toolbar>
-        <Source ref={this.sourceRef} width={5} height={5} onImageChanged={this.onImageChanged.bind(this)}></Source>
-        <BrainComponent {...this.brain}></BrainComponent>
-        <Properties type={this.propertiesType} ref={this.propertiesRef} 
+        <Source ref={this.sourceRef} onImageChanged={this.onImageChanged.bind(this)} onImageResized={this.onImageResized.bind(this)}></Source>
+        <BrainComponent ref={this.braincompenentRef} {...this.brain}></BrainComponent>
+        <Properties ref={this.propertiesRef} 
           onNeuronUpdated={this.doNeuronCreateOrUpdate.bind(this)}
           onLearn={this.doLearn.bind(this)}
         />

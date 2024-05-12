@@ -9,3 +9,7 @@
 .source-container > canvas {
     border: var(--debug-border);
 }
+
+.source-container > span > input {
+    width: 4em;
+}

@@ -15,6 +15,19 @@
     border-width: 2px;
 }
 
+.a-s-element-selected {
+    stroke-width: 2px;
+    animation: a-s-selected 1s infinite;
+}
+
+@keyframes a-s-selected {
+    from {
+        stroke-width: 5px
+    }
+    to {
+        stroke-width: 3px;
+    }
+}
 .neuron-title {
     cursor: pointer;
     border-bottom: 1px dashed black;
