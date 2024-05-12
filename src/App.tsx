@@ -54,7 +54,7 @@ export default class App extends React.Component<{}, IAppState> {
       this.brain._name = res.name;
       for (let i = 0; i < res.neurons.length;i++){
         const n:INeuron = res.neurons[i];
-        const no = this.brain.addNeuron(n._name, n._SWCount, n._SHCount, n._ACount, n._ANames, n._learnCount, n._W, n._SLinks, this.sourceRef.current?.canvasRef.current);
+        const no = this.brain.addNeuron(n._name, n._SWCount, n._SHCount, n._ACount, n._layer, n._ANames, n._learnCount, n._W, n._SLinks, this.sourceRef.current?.canvasRef.current);
         no.getSValues();
       }
       this.braincompenentRef.current?.setState({});
@@ -106,24 +106,63 @@ export default class App extends React.Component<{}, IAppState> {
   }
   doNeuronCreateOrUpdate() {
     let a_count = this.propertiesRef.current?.acountRef.current?.value;
+    let a = a_count === undefined || a_count === ""?0:parseInt(a_count);
+
     let sw_count = this.propertiesRef.current?.swcountRef.current?.value;
     let sh_count = this.propertiesRef.current?.shcountRef.current?.value;
-    let n_name = this.propertiesRef.current?.neuronnameRef.current?.value;
-    let a = a_count === undefined || a_count === ""?0:parseInt(a_count);
     let sw = sw_count === undefined || sw_count === ""?0:parseInt(sw_count);
     let sh = sh_count === undefined || sh_count === ""?0:parseInt(sh_count);
+
+    let n_name = this.propertiesRef.current?.neuronnameRef.current?.value;
     let name = n_name === undefined?"":n_name;
     a = a === 0? a+1: a;
     sw = sw === 0? sw+1: sw;
     sh = sh === 0? sh+1: sh;
     const n = this.brain.addNeuron(name, sw, sh, a);
     if (this.sourceRef.current?.canvasRef.current) {
-      n.createLinkImage(this.sourceRef.current?.canvasRef.current, 0, 0);
+      n.createLinkImageDelta(this.sourceRef.current?.canvasRef.current);
     }
     this.propertiesRef.current?.setState({type: ""});
     this.saveBrain();
     this.braincompenentRef.current?.setState({});
   }
+
+  doCascadeCreate() {
+    const n_templName = this.propertiesRef.current?.cascadeNameRef.current?.value;
+    const templName = n_templName === undefined?"":n_templName;
+
+    const sw_count = this.propertiesRef.current?.swcountRef.current?.value;
+    const sh_count = this.propertiesRef.current?.shcountRef.current?.value;
+    const sw = sw_count === undefined || sw_count === ""?0:parseInt(sw_count);
+    const sh = sh_count === undefined || sh_count === ""?0:parseInt(sh_count);
+
+    const n_hiddenLayers = this.propertiesRef.current?.hiddenLayersCountRef.current?.value;
+    const hiddenLayersCount = n_hiddenLayers === undefined || n_hiddenLayers === ""?1:parseInt(n_hiddenLayers);
+
+    // creating first layer
+    const sourceWidth = this.sourceRef.current?.state.width as number;
+    const sourceHeight = this.sourceRef.current?.state.height as number;
+    const tileW = sourceWidth - sw + 1;
+    const tileH = sourceHeight - sh + 1;
+    for (let i = 0; i < tileW; i ++) {
+      for (let j = 0; j < tileH; j ++) {
+        const n = this.brain.addNeuron(`${templName}-S-${i}-${j}`, sw, sh, hiddenLayersCount, 0);
+        if (this.sourceRef.current?.canvasRef.current) {
+          n.createLinkImageDelta(this.sourceRef.current?.canvasRef.current, i, j);
+        }
+      }
+    }
+    this.propertiesRef.current?.setState({type: ""});
+    this.saveBrain();
+    this.braincompenentRef.current?.setState({});
+  }
+
+  doRemoveAllNerons() {
+    this.brain.clear();
+    this.saveBrain();
+    this.braincompenentRef.current?.setState({});
+  }
+
   get loginReq(): ILoginReq {
     return {username: this._username as string, authtoken: this._authtoken as string};
   } 
@@ -175,17 +214,18 @@ export default class App extends React.Component<{}, IAppState> {
         <Toolbar brainName='My brain' 
           onAddNeuron={this.onAddNeuronButtonPressed.bind(this)} 
           onAddSource={this.onAddSource.bind(this)}
+          onRemoveAllNeurons={this.doRemoveAllNerons.bind(this)}
           onAddCascade={this.onAddCascade.bind(this)}
           onLearn={this.onLearn.bind(this)}></Toolbar>
         <Source ref={this.sourceRef} onImageChanged={this.onImageChanged.bind(this)} onImageResized={this.onImageResized.bind(this)}></Source>
         <BrainComponent ref={this.braincompenentRef} {...this.brain}></BrainComponent>
         <Properties ref={this.propertiesRef} 
-          onNeuronUpdated={this.doNeuronCreateOrUpdate.bind(this)}
+          onApplyNeuronUpdate={this.doNeuronCreateOrUpdate.bind(this)}
+          onApplyCascadeCreate={this.doCascadeCreate.bind(this)}
           onLearn={this.doLearn.bind(this)}
         />
         <Statusline ref={this.statuslineRef}></Statusline>
         <Pending ref={this.pendingRef}/>
-
       </div>
     );
   }

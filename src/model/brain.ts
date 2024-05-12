@@ -13,8 +13,8 @@ export interface IBrain {
 export class Brain implements IBrain {
     _name: string = "";
     _neurons: Neuron[] = new Array(0);
-    addNeuron(name: string, SWCount: number, SHCount: number, ACount: number, ANames?: Array<string>, learnCount?:Array<number>, W?: Array<Array<number>>, SLinks?: Array<ILink>, canvas?: HTMLCanvasElement | null): Neuron {
-        const n = new Neuron(name, SWCount, SHCount, ACount, ANames, learnCount, W, SLinks, canvas);
+    addNeuron(name: string, SWCount: number, SHCount: number, ACount: number, layer?: number, ANames?: Array<string>, learnCount?:Array<number>, W?: Array<Array<number>>, SLinks?: Array<ILink>, canvas?: HTMLCanvasElement | null): Neuron {
+        const n = new Neuron(name, SWCount, SHCount, ACount, layer, ANames, learnCount, W, SLinks, canvas);
         this._neurons.push(n);
         return n;
     }
@@ -36,7 +36,7 @@ interface ILink {
         y: number;
     };
     neuron?: {
-        neuron: INeuron;
+        neuronName: string;
         Aindex: number;
     }
 }
@@ -51,6 +51,7 @@ export interface INeuron {
     _SValuesCache: Array<number>;
     _AValuesCache: Array<number>;
     _ANames: Array<string>;
+    _layer?: number;
 }
 
 export class Neuron implements INeuron {
@@ -65,18 +66,20 @@ export class Neuron implements INeuron {
     _ANames: Array<string> = new Array<string>();
     _W: Array<Array<number>> = new Array<Array<number>>();
     _canvas?: HTMLCanvasElement | null;
+    _layer?: number = 0;
     static NeuronFromInterface(n: INeuron): Neuron {
         const nn = new Neuron(n._name, n._SWCount, n._SHCount, n._ACount);
         Object.assign(nn, n);
         return nn;
     }
-    constructor(name: string, SWCount: number, SHCount: number, ACount: number, ANames?: Array<string>, learnCount?:Array<number>, W?: Array<Array<number>>, SLinks?: Array<ILink>, canvas?: HTMLCanvasElement | null){
+    constructor(name: string, SWCount: number, SHCount: number, ACount: number, layer?: number, ANames?: Array<string>, learnCount?:Array<number>, W?: Array<Array<number>>, SLinks?: Array<ILink>, canvas?: HTMLCanvasElement | null){
         this._SWCount = SWCount;
         this._SHCount = SHCount;
         this._ACount = ACount;
         const SCount = SWCount * SHCount;
         this._name = name;
         this._canvas = canvas;
+        this._layer = layer;
         for (let j = 0; j < SCount; j++) {
             this._SLinks.push(SLinks?SLinks[j]:{});
             this._SValuesCache.push(0);
@@ -95,10 +98,16 @@ export class Neuron implements INeuron {
             this._ANames.push(ANames?ANames[i]:`S${i}`);
         }
     }
-    createLinkImage(imd: HTMLCanvasElement, tileX: number, tileY: number): void {
+    createLinkImageTile(imd: HTMLCanvasElement, tileX: number, tileY: number): void {
         this._canvas = imd;
         const startX = this._SWCount * tileX;
         const startY = this._SHCount * tileY;
+        this.createLinkImageDelta(imd, startX, startY);
+    }
+    createLinkImageDelta(imd: HTMLCanvasElement, deltaX?: number, deltaY?: number): void {
+        this._canvas = imd;
+        const startX = deltaX !== undefined?deltaX:0;
+        const startY = deltaY !== undefined?deltaY:0;
         this._SLinks.forEach((v, i)=>{
             v.image = {x: startX + i % this._SWCount, y: startY + Math.floor(i / this._SWCount)}; 
         });
@@ -116,8 +125,14 @@ export class Neuron implements INeuron {
         this._AValuesCache.forEach((v, i)=>this.calcA(i));
         return ret;
     }
-    createLinkNeuron(n: INeuron, Aindex: number ): void {
-
+    createLinkNeuron(neuronSrc: INeuron, AindexSrc: number,  SindexDts: number): void {
+        const il: ILink = {
+            neuron: {
+                neuronName: neuronSrc._name,
+                Aindex: AindexSrc
+            }
+        }
+        this._SLinks[SindexDts] = il;
     }
 
     _learnAtom(Aindex: number, rightValue: number): number { // return percent of goal achive
@@ -164,7 +179,8 @@ export class Neuron implements INeuron {
             _ANames: this._ANames,
             _learnCount: this._learnCount,
             _W: this._W,
-            _SLinks: this._SLinks
+            _SLinks: this._SLinks,
+            _layer: this._layer
         };
     }
 }

@@ -2,20 +2,23 @@ import './neuron.css';
 import {INeuron, Neuron} from './../../model/brain'
 import React from 'react';
 
+export interface INeuronProps extends INeuron {
+    
+}
+
 export interface INeuronState {
     selected: boolean;
+    aSelected?: number;
     sSelected?: number;
 }
 
-export default class NeuronComponent extends React.Component<INeuron, INeuronState> {
+export default class NeuronComponent extends React.Component<INeuronProps, INeuronState> {
     neuron: Neuron = Neuron.NeuronFromInterface(this.props);
-    state = {
-        selected: false,
-        sSelected: undefined
+    state: INeuronState = {
+        selected: false
     };
-    meRef: React.RefObject<HTMLSpanElement> = React.createRef();
     ToggleSelected(){
-        this.meRef.current?.classList.toggle("neuron-selected");
+        this.setState({selected: !this.state.selected});
     }
     ToggleSSelected(Sindex: number) {
         const st: INeuronState = this.state;
@@ -52,7 +55,7 @@ export default class NeuronComponent extends React.Component<INeuron, INeuronSta
             <text x={circle_diameter+circle_padding} y={v+circle_diameter/2} fontSize={circle_diameter}>{Math.round(this.neuron._SValuesCache[i]* 100)/100}</text>
             </g>
         )
-    return <span className='neuron-container' ref={this.meRef}>
+    return <span className={`neuron-container ${this.state.selected?"neuron-selected":""}`}>
             <span className='neuron-title' key={`neuron_title_${this.props._name}`} onClick={this.ToggleSelected.bind(this)}>{this.neuron._name}</span>
             <svg version="1.1" width={width * 2} height={height} xmlns="http://www.w3.org/2000/svg">
             {a_l}

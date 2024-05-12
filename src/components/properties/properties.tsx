@@ -4,7 +4,8 @@ import "./properties.css"
 export type PropsTypes = "" | "neuron" | "brain" | "cascade" | "A-element" | "S-element" | "source" | "learn"; 
 
 export interface IPropertiesProps {
-    onNeuronUpdated: ()=>void;
+    onApplyNeuronUpdate: ()=>void;
+    onApplyCascadeCreate: ()=>void;
     onLearn: ()=>void;
 }
 
@@ -36,21 +37,21 @@ export default class Properties extends React.Component <IPropertiesProps, IProp
                 A-count<input type="number" ref={this.acountRef}></input><br/>
                 SW-count<input type="number" ref={this.swcountRef}></input><br/>
                 SH-count<input type="number" ref={this.shcountRef}></input><br/>
-                <button onClick={this.props.onNeuronUpdated}>Apply</button>
+                <button onClick={this.props.onApplyNeuronUpdate}>Apply</button>
             </span>
             case "cascade": return <span>
                 <span>Cascade properties</span><br/>
-                Name<input type="text" ref={this.neuronnameRef}></input><br/>
+                Name<input type="text" ref={this.cascadeNameRef}></input><br/>
                 Hidden layers count<input type="number" ref={this.hiddenLayersCountRef}></input><br/>
                 SW-count<input type="number" ref={this.swcountRef}></input><br/>
                 SH-count<input type="number" ref={this.shcountRef}></input><br/>
-                <button onClick={this.props.onNeuronUpdated}>Apply</button>
+                <button onClick={this.props.onApplyCascadeCreate}>Apply</button>
             </span>
             case "source": return <span>
                 <span>Neuron properties</span><br/>
                 Name<input type="text" ref={this.neuronnameRef}></input><br/>
                 A-count<input type="number" ref={this.acountRef}></input><br/>
-                <button onClick={this.props.onNeuronUpdated}>Apply</button>
+                <button onClick={this.props.onApplyNeuronUpdate}>Apply</button>
             </span>
             case "learn": return <span>
                 <span>Learn properties</span><br/>
@@ -60,8 +61,9 @@ export default class Properties extends React.Component <IPropertiesProps, IProp
             </span>
             case "S-element": return <span>
                 <span>S-element</span><br/>
-                A-Index<input type="number" ref={this.AindexRef}></input><br/>
-                Righ value<input type="number" ref={this.rightValueRef}></input><br/>
+                Name<input type="number" ref={this.AindexRef}></input><br/>
+                <input type="radio" name="imageOrNeuron">image</input>
+                <input type="radio" name="imageOrNeuron">neuron</input>
                 <button onClick={this.props.onLearn}>Apply</button>
             </span>
         }

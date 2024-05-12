@@ -5,7 +5,8 @@ export interface IToolbarProps {
     onAddNeuron: ()=>void;
     onAddSource: ()=>void;
     onAddCascade: ()=>void;
-    onLearn:()=>void;
+    onLearn: ()=>void;
+    onRemoveAllNeurons: ()=>void;
 }
 
 export interface IToolbarState {
@@ -19,7 +20,7 @@ export default class Toolbar extends React.Component<IToolbarProps, IToolbarStat
             <button onClick={this.props.onAddNeuron}>Add neuron</button>
             <button onClick={this.props.onAddCascade}>Add cascade</button>
             <button>Block neuron</button>
-            <button>Remove neuron</button>
+            <button onClick={this.props.onRemoveAllNeurons}>Remove all neurons</button>
             <button>Add link</button>
             <button>Remove link</button>
             <button onClick={this.props.onAddSource}>Add source</button>
