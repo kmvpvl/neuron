@@ -58,7 +58,7 @@ export default class User extends React.Component<IUserProps, IUserState> {
                 default:
                     return <span className="user-container">
                         <span>🕵️{this.props.username}</span>
-                        <select ref={this._brainListRef} onSelect={e=>this.props.onBrainSelected(e.currentTarget.value)}>
+                        <select ref={this._brainListRef} onChange={e=>this.props.onBrainSelected(e.currentTarget.value)}>
                             {this.props.brainlist?.map((v, i)=><option key={i} value={v}>{v}</option>)}
                         </select>
                     </span>
