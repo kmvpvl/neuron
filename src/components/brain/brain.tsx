@@ -40,8 +40,16 @@ export default class BrainComponent extends React.Component <IBrainProps, IBrain
                     {this._brain._dequeue.map((v, i)=><span className='brain-queue-message' key={i}>{v._type==="s-value"?"S":"-"}</span>)}
                 </span>
             </span>
-            <span className='brain-neurons'>
-                {this._brain._neurons.map((v, i)=><NeuronComponent neuron={v} key={`neuroncomp_${i}`}></NeuronComponent>)}
+            <span className='brain-net'>
+            <span className='brain-neurons s-layer'>
+                {this._brain._neurons.filter(v=>/-S-/i.test(v._name)).map((v, i)=><NeuronComponent neuron={v} key={`neuroncomp_${i}`}></NeuronComponent>)}
+            </span>
+            <span className='brain-neurons h-layer'>
+                {this._brain._neurons.filter(v=>/-H-/i.test(v._name)).map((v, i)=><NeuronComponent neuron={v} key={`neuroncomp_${i}`}></NeuronComponent>)}
+            </span>
+            <span className='brain-neurons r-layer'>
+                {this._brain._neurons.filter(v=>/-R-/i.test(v._name)).map((v, i)=><NeuronComponent neuron={v} key={`neuroncomp_${i}`}></NeuronComponent>)}
+            </span>
             </span>
         </div>
     }

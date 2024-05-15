@@ -3,7 +3,8 @@
     padding: 2px;
     margin: 2px;
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
     width: max-content;
     height: max-content;
     gap: 4px;
@@ -32,4 +33,38 @@
     cursor: pointer;
     border-bottom: 1px dashed black;
     text-align: center;
+    font-size: smaller;
+    grid-column: 1 / span 2;
+}
+.neuron-s-elements-container {
+    display: grid;
+}
+.neuron-a-elements-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 1px dashed black;
+}
+
+.neuron-element-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+}
+.neuron-element-value {
+    font-size: xx-small;
+}
+.neuron-element-name {
+    font-size: xx-small;    
+}
+.neuron-element-icon {
+    border: var(--debug-border);
+    width: 10px;
+    height: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.neuron-element-icon-value {
+    display: block;
+    background-color: black;
 }

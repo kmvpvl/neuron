@@ -19,18 +19,20 @@
 .brain-queue-container {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
 }
 
 .brain-queue-message {
     border: var(--debug-border);
 }
-
-.brain-neurons {
-    display: flex;
-    flex-wrap: wrap;
+.brain-net {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     max-height: 100%;
     min-height: 100%;
     height: 100%;
     overflow: auto;
+}
+.brain-neurons {
+    display: flex;
+    flex-direction: column;
 }

@@ -161,6 +161,7 @@ export default class App extends React.Component<{}, IAppState> {
     }
     this.propertiesRef.current?.setState({type: ""});
     this.saveBrain();
+    this.onImageChanged();
     this.braincompenentRef.current?.setState({});
   }
 
