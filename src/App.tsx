@@ -6,7 +6,7 @@ import Statusline, { IStatuslineState } from './components/statusline/statusline
 import Toolbar from './components/toolbar/toolbar';
 import Properties, {  } from './components/properties/properties';
 import Source from './components/source/source';
-import { Brain, INeuron, Neuron } from './model/brain';
+import { Brain, INeuron, Message, Neuron } from './model/brain';
 import BrainComponent from './components/brain/brain';
 import { ILoginReq, serverCommand, serverFetch } from './common/fetches';
 import Pending from './components/pending/pending';
@@ -22,7 +22,7 @@ export default class App extends React.Component<{}, IAppState> {
   pendingRef: React.RefObject <Pending> = React.createRef();
   userRef: React.RefObject<User> = React.createRef();
   braincompenentRef: React.RefObject<BrainComponent> = React.createRef();
-  brain = new Brain();
+  brain = new Brain("");
   brainList: Array<string> = [];
   _username: string | null = localStorage.getItem("neuron_username");
   _authtoken: string | null = localStorage.getItem("neuron_authtoken");
@@ -34,6 +34,7 @@ export default class App extends React.Component<{}, IAppState> {
       this.loadBrainList();
     }
   }
+  
   loadBrainList() {
     this.pendingRef.current?.incUse();
     this.brain.clear();
@@ -54,14 +55,14 @@ export default class App extends React.Component<{}, IAppState> {
       this.brain._name = res.name;
       for (let i = 0; i < res.neurons.length;i++){
         const n:INeuron = res.neurons[i];
-        const no = this.brain.addNeuron(n._name, n._SWCount, n._SHCount, n._ACount, n._layer, n._ANames, n._learnCount, n._W, n._SLinks, this.sourceRef.current?.canvasRef.current);
-        no.getSValues();
+        this.brain.addNeuron(n._name, n._SWCount, n._SHCount, n._ACount, n._layer, n._ANames, n._learnCount, n._W, n._SLinks);
       }
-      this.braincompenentRef.current?.setState({});
+      this.onImageChanged();
     }, (err)=>{
       this.pendingRef.current?.decUse();
     });
   }
+
   ping () {
     const obj = this;
     serverFetch('version', "GET", undefined, undefined, (res)=>{
@@ -99,10 +100,16 @@ export default class App extends React.Component<{}, IAppState> {
 
   }
   onImageChanged() {
-    this.braincompenentRef.current?.setState({});
+    const ctx = this.sourceRef.current?.canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    const msg = new Message("s-value", {canvas: { 
+      name_template: "",
+      ctx: ctx}},
+      [], "" 
+    );
+    this.brain.enqueue(msg);
   }
   onImageResized(w: number, h: number) {
-
   }
   doNeuronCreateOrUpdate() {
     let a_count = this.propertiesRef.current?.acountRef.current?.value;
@@ -120,7 +127,7 @@ export default class App extends React.Component<{}, IAppState> {
     sh = sh === 0? sh+1: sh;
     const n = this.brain.addNeuron(name, sw, sh, a);
     if (this.sourceRef.current?.canvasRef.current) {
-      n.createLinkImageDelta(this.sourceRef.current?.canvasRef.current);
+      n.createLinkImageDelta();
     }
     this.propertiesRef.current?.setState({type: ""});
     this.saveBrain();
@@ -148,7 +155,7 @@ export default class App extends React.Component<{}, IAppState> {
       for (let j = 0; j < tileH; j ++) {
         const n = this.brain.addNeuron(`${templName}-S-${i}-${j}`, sw, sh, hiddenLayersCount, 0);
         if (this.sourceRef.current?.canvasRef.current) {
-          n.createLinkImageDelta(this.sourceRef.current?.canvasRef.current, i, j);
+          n.createLinkImageDelta(i, j);
         }
       }
     }
@@ -218,7 +225,7 @@ export default class App extends React.Component<{}, IAppState> {
           onAddCascade={this.onAddCascade.bind(this)}
           onLearn={this.onLearn.bind(this)}></Toolbar>
         <Source ref={this.sourceRef} onImageChanged={this.onImageChanged.bind(this)} onImageResized={this.onImageResized.bind(this)}></Source>
-        <BrainComponent ref={this.braincompenentRef} {...this.brain}></BrainComponent>
+        <BrainComponent ref={this.braincompenentRef} brain={this.brain}></BrainComponent>
         <Properties ref={this.propertiesRef} 
           onApplyNeuronUpdate={this.doNeuronCreateOrUpdate.bind(this)}
           onApplyCascadeCreate={this.doCascadeCreate.bind(this)}

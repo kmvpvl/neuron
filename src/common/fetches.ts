@@ -1,4 +1,4 @@
-export type ErrorCode = "notauth" | "rolerequired" | "servernotresponding" | "badrequest" | "unknown" | "notfound";
+export type ErrorCode = "notauth" | "rolerequired" | "servernotresponding" | "badrequest" | "unknown" | "notfound" | "abstract";
 export class NeuronError extends Error{
     code: ErrorCode;
     constructor (code: ErrorCode, message: string){

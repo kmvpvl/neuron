@@ -1,6 +1,6 @@
 .brain-container {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto auto 1fr;
     grid-area: brain;
     border: var(--debug-border);
     padding: 5px;
@@ -8,6 +8,22 @@
     min-height: 100%;
     height: 100%;
     overflow: hidden;
+}
+
+.brain-queues {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+}
+
+.brain-queue-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.brain-queue-message {
+    border: var(--debug-border);
 }
 
 .brain-neurons {

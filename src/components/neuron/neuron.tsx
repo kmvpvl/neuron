@@ -1,9 +1,9 @@
 import './neuron.css';
-import {INeuron, Neuron} from './../../model/brain'
+import {Neuron} from './../../model/brain'
 import React from 'react';
 
-export interface INeuronProps extends INeuron {
-    
+export interface INeuronProps {
+    neuron: Neuron
 }
 
 export interface INeuronState {
@@ -13,10 +13,17 @@ export interface INeuronState {
 }
 
 export default class NeuronComponent extends React.Component<INeuronProps, INeuronState> {
-    neuron: Neuron = Neuron.NeuronFromInterface(this.props);
+    neuron: Neuron = this.props.neuron;
     state: INeuronState = {
         selected: false
     };
+/*    constructor(props: any) {
+        super(props);
+        this.neuron._onUpdate = this.onUpdate.bind(this)
+    }*/
+    componentDidMount(): void {
+        this.neuron._onUpdate = this.onUpdate.bind(this)
+    }
     ToggleSelected(){
         this.setState({selected: !this.state.selected});
     }
@@ -25,9 +32,12 @@ export default class NeuronComponent extends React.Component<INeuronProps, INeur
         st.sSelected = Sindex;
         this.setState(st);
     }
+    onUpdate() {
+        this.setState(this.state);
+    }
     render(): React.ReactNode {
 
-        const ndata = this.neuron.getSValues();
+        const ndata = this.neuron._SValuesCache;
         const width = 50;
         const circle_padding = 2;
         const circle_diameter = 10;
@@ -37,7 +47,7 @@ export default class NeuronComponent extends React.Component<INeuronProps, INeur
         const s_height = circle_diameter * s_count + circle_padding * (s_count - 1)+1;
         const height = Math.max(a_height,s_height);
         const a = new Array<number>(a_count);
-        const maxA = Math.max(...this.props._AValuesCache);
+        const maxA = Math.max(...this.props.neuron._AValuesCache);
         for (let i = 0; i < a_count; i++) a[i] = i * (circle_diameter + circle_padding) + circle_diameter/2 + (height - a_height)/2;
         let a_l = a.map((v, i)=>
             <g key={`neuron_${this.neuron._name}_a_${i}`}>
@@ -56,7 +66,7 @@ export default class NeuronComponent extends React.Component<INeuronProps, INeur
             </g>
         )
     return <span className={`neuron-container ${this.state.selected?"neuron-selected":""}`}>
-            <span className='neuron-title' key={`neuron_title_${this.props._name}`} onClick={this.ToggleSelected.bind(this)}>{this.neuron._name}</span>
+            <span className='neuron-title' key={`neuron_title_${this.props.neuron._name}`} onClick={this.ToggleSelected.bind(this)}>{this.neuron._name}</span>
             <svg version="1.1" width={width * 2} height={height} xmlns="http://www.w3.org/2000/svg">
             {a_l}
             {s_l}
