@@ -87,6 +87,11 @@ export class Brain implements IBrain {
         this._onUpdate();
         return n;
     }
+    doLearn(neuronName: string | undefined, rightValue: number, Aindex: number) {
+        this.enqueue(new Message("learn", {}, [{neuron: {name_template: neuronName as string}}], {Aindex: Aindex, rightValue: rightValue}));
+        this._onUpdate();
+    }
+
     clear(){
         this._neurons.splice(0, this._neurons.length);
         this._enqueue.splice(0, this._enqueue.length);
@@ -113,9 +118,11 @@ export class Brain implements IBrain {
     }
     private processQueue() {
         while (this._processingQueue.length > 0) {
-            const msg = this._processingQueue.shift();
-            if (msg?._to.length === 0) {
+            const msg = this._processingQueue.shift() as Message;
+            if (msg._to.length === 0) {
                 this._neurons.forEach((v, i)=>v.processMessage(msg))
+            } else {
+                this._neurons.filter(v=>v._name===msg._to[0].neuron?.name_template).forEach((v, i)=>v.processMessage(msg));
             }
             if (msg !== undefined) {
                 msg._processed = new Date();
@@ -243,19 +250,36 @@ export class Neuron implements INeuron {
         for (let i = 0; i < this._SHCount*this._SWCount + 1; i++){
             this._W[Aindex][i] = (this._W[Aindex][i] * this._learnCount[Aindex] + v[i] * diff/(this._SHCount*this._SWCount + 1))/this._learnCount[Aindex];
         }
-        return diff/rightValue;
+        return diff;
     }
     
-    learn(Aindex: number, rightValue: number, uptoPercent: number = 0.1, learnCount?: number): number {
-        if (learnCount === undefined) {
-            // doing until percent goal achieved
-            const maxM = 10000;
-            let m = 0; // counter is a fuse to infinite cycle
-            while (m++ < maxM) {
-                if (Math.abs(this._learnAtom(Aindex, rightValue)) <uptoPercent) break;
-            } 
-        }
+    learnSingle(Aindex: number, rightValue: number, uptoPercent: number = 0.1, learnCount?: number): number {
+        // doing until percent goal achieved
+        const maxM = learnCount === undefined?10000:learnCount;
+        let m = 0; // counter is a fuse to infinite cycle
+        while (m++ < maxM) {
+            if (Math.abs(this._learnAtom(Aindex, rightValue)) < uptoPercent) break;
+        } 
         return this._learnCount[Aindex];
+    }
+
+    learnNetAtom(Aindex: number, rightValue: number): number {
+        const backupSvalues = this._SValuesCache;
+        const SCount = this._SWCount*this._SHCount;
+        this._SValuesCache = new Array<number>(SCount);
+        for (let i = 0; i < SCount; i++){
+            if (this._SLinks[i].image !== undefined) {
+                // if link is with image then save value from image
+                this._SValuesCache[i] = backupSvalues[i];
+            } else if (this._SLinks[i].neuron !== undefined) {
+                // if link is with another neuron send to him right value as apart of 1 and get this value to learn myself
+                this._SValuesCache[i] = (rightValue - backupSvalues[i]);//(SCount + 1);
+                this._brain.enqueue(new Message("learn", {neuron:{name_template: this._name}}, [{neuron:{name_template: this._SLinks[i].neuron?.neuronName as string}}], {rightValue: this._SValuesCache[i], Aindex:this._SLinks[i].neuron?.Aindex}));
+            }
+        }
+        const ret = this._learnAtom(Aindex, rightValue);
+        this._SValuesCache = backupSvalues;
+        return ret;
     }
 
     calcA(x: number): number {
@@ -282,8 +306,10 @@ export class Neuron implements INeuron {
                 this._SValuesCache = ret;
             break;
             case "a-value":
-                this._SValuesCache[msg._body.Sindex] = msg._body.Sindex;
-                this._AValuesCache.forEach((v, i)=>this.calcA(i));
+                this._SValuesCache[msg._body.Sindex] = msg._body.value;
+            break;
+            case "learn":
+                this.learnNetAtom(msg._body.Aindex, msg._body.rightValue);
             break;
         }
         this._AValuesCache.forEach((v, i)=>this.calcA(i));

@@ -172,8 +172,8 @@ export default class App extends React.Component<{}, IAppState> {
           n.createLinkImageDelta(i, j);
         }
         for (let k = 0; k < hiddenLayersCount; k ++) {
-          n.createALinkNeuron(HL[k], i*sw + j, k);
-          HL[k].createSLinkNeuron(n, k, i*sw + j)
+          n.createALinkNeuron(HL[k], i*tileW + j, k);
+          HL[k].createSLinkNeuron(n, k, i*tileW + j)
         }
       }
     }
@@ -204,9 +204,11 @@ export default class App extends React.Component<{}, IAppState> {
   }
 
   doLearn() {
+    const neuronName = this.propertiesRef.current?.neuronnameRef.current?.value;
     const rightValue = parseFloat(this.propertiesRef.current?.rightValueRef.current?.value as string);
     const ind = parseInt(this.propertiesRef.current?.AindexRef.current?.value as string);
-    this.brain._neurons[0].learn(ind, rightValue);
+    //this.brain._neurons[0].learn(ind, rightValue);
+    this.brain.doLearn(neuronName, rightValue, ind)
     this.saveBrain();
     this.braincompenentRef.current?.setState({});
   }

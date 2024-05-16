@@ -55,6 +55,7 @@ export default class Properties extends React.Component <IPropertiesProps, IProp
             </span>
             case "learn": return <span>
                 <span>Learn properties</span><br/>
+                Name<input type="text" ref={this.neuronnameRef}></input><br/>
                 A-Index<input type="number" ref={this.AindexRef}></input><br/>
                 Righ value<input type="number" ref={this.rightValueRef}></input><br/>
                 <button onClick={this.props.onLearn}>Apply</button>
