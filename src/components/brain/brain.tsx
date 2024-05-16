@@ -29,15 +29,15 @@ export default class BrainComponent extends React.Component <IBrainProps, IBrain
             <span className='brain-queues'>
                 <span>Enqueue</span>
                 <span className='brain-queue-container'>
-                    {this._brain._enqueue.map((v, i)=><span className='brain-queue-message' key={i}>{v._type==="s-value"?"S":"-"}</span>)}
+                    {this._brain._enqueue.map((v, i)=><span className='brain-queue-message' key={i}>{v._type}</span>)}
                 </span>
                 <span>Processing</span>
                 <span className='brain-queue-container'>
-                    {this._brain._processingQueue.map((v, i)=><span className='brain-queue-message' key={i}>{v._type==="s-value"?"S":"-"}</span>)}
+                    {this._brain._processingQueue.map((v, i)=><span className='brain-queue-message' key={i}>{v._type}</span>)}
                 </span>
                 <span>Dequeue</span>
                 <span className='brain-queue-container'>
-                    {this._brain._dequeue.map((v, i)=><span className='brain-queue-message' key={i}>{v._type==="s-value"?"S":"-"}</span>)}
+                    {this._brain._dequeue.map((v, i)=><span className='brain-queue-message' key={i}>{v._type}</span>)}
                 </span>
             </span>
             <span className='brain-net'>

@@ -38,17 +38,25 @@
 }
 .neuron-s-elements-container {
     display: grid;
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
 }
 .neuron-a-elements-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border-left: 1px dashed black;
+    gap: 2px;
+}
+.neuron-a-elements-container > span {
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
 }
 
 .neuron-element-container {
     display: grid;
     grid-template-columns: auto auto auto;
+    border-left: 1px solid black;
+    border-top: 1px solid black;
 }
 .neuron-element-value {
     font-size: xx-small;
@@ -57,7 +65,6 @@
     font-size: xx-small;    
 }
 .neuron-element-icon {
-    border: var(--debug-border);
     width: 10px;
     height: 10px;
     display: flex;

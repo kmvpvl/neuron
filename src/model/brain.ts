@@ -1,7 +1,3 @@
-// Link costs
-//
-//
-//
 import { NeuronError } from "../common/fetches";
 
 const msEnqueueProcessingTimer:number = 10;
@@ -13,7 +9,7 @@ type onNeuronUpdateCallbackFunction = ()=>void;
 type NeuronsArray = Array<Neuron>;
 
 type MessageID = string;
-type MessageType = "learn" | "s-value" | "info";
+type MessageType = "learn" | "s-value" | "info" | "a-value";
 type MessageAddress = {
     neuron?: {
         name_template: RegExp | string;
@@ -24,10 +20,7 @@ type MessageAddress = {
     }
 }
 
-type MessageBody = {
-
-}
-
+type MessageBody = any;
 export interface IMessage {
     _id: MessageID;
     _type: MessageType;
@@ -87,8 +80,8 @@ export class Brain implements IBrain {
         this._processQueueIntervalHandler = setInterval(this.processQueue.bind(this), msQueueProcessingTimer);
         this._processEnQueueIntervalHandler = setInterval(this.processEnQueue.bind(this), msEnqueueProcessingTimer);
     }
-    addNeuron(name: string, SWCount: number, SHCount: number, ACount: number, layer?: number, ANames?: Array<string>, learnCount?:Array<number>, W?: Array<Array<number>>, SLinks?: Array<ILink>): Neuron {
-        const n = new Neuron(this, name, SWCount, SHCount, ACount, layer, ANames, learnCount, W, SLinks);
+    addNeuron(name: string, SWCount: number, SHCount: number, ACount: number, layer?: number, ANames?: Array<string>, learnCount?:Array<number>, W?: Array<Array<number>>, SLinks?: Array<ILink>, ALinks?: Array<Array<ILink>>): Neuron {
+        const n = new Neuron(this, name, SWCount, SHCount, ACount, layer, ANames, learnCount, W, SLinks, ALinks);
         this._neurons.push(n);
         this._onUpdate();
         return n;
@@ -136,7 +129,8 @@ interface ILink {
     };
     neuron?: {
         neuronName: string;
-        Aindex: number;
+        Aindex?: number;
+        Sindex?: number;
     }
 }
 
@@ -149,6 +143,7 @@ export interface INeuron {
     _SHCount: number;
     _ACount: number;
     _SLinks: Array <ILink>;
+    _ALinks: Array<Array <ILink>>;
     _learnCount: Array<number>;
     _W: Array<Array<number>>;
     _SValuesCache: Array<number>;
@@ -166,6 +161,7 @@ export class Neuron implements INeuron {
     _SHCount: number;
     _ACount: number;
     _SLinks: Array <ILink> = new Array<ILink>();
+    _ALinks: Array<Array <ILink>> = new Array<Array<ILink>>();
     _SValuesCache: number[] = new Array<number>();
     _AValuesCache: number[] = new Array<number>();
     _learnCount: Array<number> = new Array<number>();
@@ -175,7 +171,7 @@ export class Neuron implements INeuron {
     _brain: Brain;
     _onUpdate: onNeuronUpdateCallbackFunction = ()=> {throw new NeuronError("abstract", `Neuron has no onUpdate implementation`)};
 
-    constructor(brain: Brain, name: string, SWCount: number, SHCount: number, ACount: number, layer?: number, ANames?: Array<string>, learnCount?:Array<number>, W?: Array<Array<number>>, SLinks?: Array<ILink>){
+    constructor(brain: Brain, name: string, SWCount: number, SHCount: number, ACount: number, layer?: number, ANames?: Array<string>, learnCount?:Array<number>, W?: Array<Array<number>>, SLinks?: Array<ILink>, ALinks?: Array<Array<ILink>>){
         this._brain = brain;
         this._SWCount = SWCount;
         this._SHCount = SHCount;
@@ -197,8 +193,9 @@ export class Neuron implements INeuron {
                 this._W.push(w);
             }
             this._AValuesCache.push(0);
+            this._ALinks.push(ALinks?ALinks[i]:[]);
             this._learnCount.push(learnCount?learnCount[i]:0);
-            this._ANames.push(ANames?ANames[i]:`S${i}`);
+            this._ANames.push(ANames?ANames[i]:`A${i}`);
         }
     }
     createLinkImageTile(tileX: number, tileY: number): void {
@@ -214,7 +211,7 @@ export class Neuron implements INeuron {
         });
     }
 
-    createLinkNeuron(neuronSrc: INeuron, AindexSrc: number,  SindexDts: number): void {
+    createSLinkNeuron(neuronSrc: Neuron, AindexSrc: number,  SindexDts: number): void {
         const il: ILink = {
             neuron: {
                 neuronName: neuronSrc._name,
@@ -222,6 +219,16 @@ export class Neuron implements INeuron {
             }
         }
         this._SLinks[SindexDts] = il;
+    }
+
+    createALinkNeuron(neuronSrc: Neuron, SindexSrc: number,  AindexDts: number): void {
+        const il: ILink = {
+            neuron: {
+                neuronName: neuronSrc._name,
+                Sindex: SindexSrc
+            }
+        }
+        this._ALinks[AindexDts].push(il);
     }
 
     _learnAtom(Aindex: number, rightValue: number): number { // return percent of goal achive
@@ -252,6 +259,9 @@ export class Neuron implements INeuron {
         const w = this._W[x];
         const ret = v.reduce((part, v, i)=> part + v * w[i], 0.0);
         this._AValuesCache[x] = ret;
+        if (this._ALinks[x].length > 0) {
+            this._ALinks[x].forEach(v=> this._brain.enqueue(new Message("a-value", {neuron:{name_template: this._name}}, [{neuron: {name_template: v.neuron?.neuronName as string}}], {Sindex: v.neuron?.Sindex, value: ret})));
+        }
         return ret;
     }
 
@@ -266,13 +276,17 @@ export class Neuron implements INeuron {
                     } else return 0;
                 })
                 this._SValuesCache = ret;
-                this._AValuesCache.forEach((v, i)=>this.calcA(i));
-                try {
-                    this._onUpdate();
-                } catch(e: any) {
-                    console.log(e.message);
-                }
             break;
+            case "a-value":
+                this._SValuesCache[msg._body.Sindex] = msg._body.Sindex;
+                this._AValuesCache.forEach((v, i)=>this.calcA(i));
+            break;
+        }
+        this._AValuesCache.forEach((v, i)=>this.calcA(i));
+        try {
+            this._onUpdate();
+        } catch(e: any) {
+            console.log(e.message);
         }
     }
     
@@ -286,6 +300,7 @@ export class Neuron implements INeuron {
             _learnCount: this._learnCount,
             _W: this._W,
             _SLinks: this._SLinks,
+            _ALinks: this._ALinks,
             _layer: this._layer
         };
     }

@@ -55,7 +55,7 @@ export default class App extends React.Component<{}, IAppState> {
       this.brain._name = res.name;
       for (let i = 0; i < res.neurons.length;i++){
         const n:INeuron = res.neurons[i];
-        this.brain.addNeuron(n._name, n._SWCount, n._SHCount, n._ACount, n._layer, n._ANames, n._learnCount, n._W, n._SLinks);
+        this.brain.addNeuron(n._name, n._SWCount, n._SHCount, n._ACount, n._layer, n._ANames, n._learnCount, n._W, n._SLinks, n._ALinks);
       }
       this.onImageChanged();
     }, (err)=>{
@@ -145,20 +145,39 @@ export default class App extends React.Component<{}, IAppState> {
 
     const n_hiddenLayers = this.propertiesRef.current?.hiddenLayersCountRef.current?.value;
     const hiddenLayersCount = n_hiddenLayers === undefined || n_hiddenLayers === ""?1:parseInt(n_hiddenLayers);
-
-    // creating first layer
     const sourceWidth = this.sourceRef.current?.state.width as number;
     const sourceHeight = this.sourceRef.current?.state.height as number;
     const tileW = sourceWidth - sw + 1;
     const tileH = sourceHeight - sh + 1;
+
+    // creating R layer
+    const resN = this.brain.addNeuron(`${templName}-R-`, hiddenLayersCount, hiddenLayersCount, 2);
+
+    // creating H layer
+    const HL = [];
+    for (let i = 0; i < hiddenLayersCount; i ++) {
+      const hiddenN = this.brain.addNeuron(`${templName}-H-${i}`, 1, tileW*tileH, hiddenLayersCount);
+      for (let k = 0; k < hiddenLayersCount; k ++) {
+        resN.createSLinkNeuron(hiddenN, k, i*hiddenLayersCount+k);
+        hiddenN.createALinkNeuron(resN, i*hiddenLayersCount+k, k);
+      }
+      HL.push(hiddenN);
+    }
+
+    // creating S layer
     for (let i = 0; i < tileW; i ++) {
       for (let j = 0; j < tileH; j ++) {
         const n = this.brain.addNeuron(`${templName}-S-${i}-${j}`, sw, sh, hiddenLayersCount, 0);
         if (this.sourceRef.current?.canvasRef.current) {
           n.createLinkImageDelta(i, j);
         }
+        for (let k = 0; k < hiddenLayersCount; k ++) {
+          n.createALinkNeuron(HL[k], i*sw + j, k);
+          HL[k].createSLinkNeuron(n, k, i*sw + j)
+        }
       }
     }
+
     this.propertiesRef.current?.setState({type: ""});
     this.saveBrain();
     this.onImageChanged();
