@@ -40,6 +40,7 @@ export class Message implements IMessage {
     _body: MessageBody;
     _answerRequired?: boolean;
     _created: Date = new Date();
+    _processed?: Date;
     constructor(type: MessageType, from: MessageAddress, to: Array<MessageAddress>, body: MessageBody, answerRequired?: boolean) {
         this._type = type;
         this._from = from;
@@ -116,7 +117,10 @@ export class Brain implements IBrain {
             if (msg?._to.length === 0) {
                 this._neurons.forEach((v, i)=>v.processMessage(msg))
             }
-            if (msg !== undefined) this._dequeue.push(msg);
+            if (msg !== undefined) {
+                msg._processed = new Date();
+                this._dequeue.push(msg);
+            }
             this._onUpdateQueue();
         }
     }
